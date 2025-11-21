@@ -1,0 +1,35 @@
+name: Test Slack Mention
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test-slack-mention:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+
+      - name: Get Slack mention
+        id: get-mention
+        uses: ./.github/actions/get-slack-mention
+
+      - name: Build message
+        id: build-message
+        run: |
+          MESSAGE="${{ steps.get-mention.outputs.mention }} テストメッセージです。"
+          echo "message<<EOF" >> $GITHUB_OUTPUT
+          echo "$MESSAGE" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Slack notification (test)
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_CHANNEL: github-actions
+          SLACK_USERNAME: GitHub Actions AP
+          SLACK_TITLE: Test Slack Mention
+          SLACK_COLOR: '#2196F3'
+          SLACK_MESSAGE: ${{ steps.build-message.outputs.message }}
+          SLACK_WEBHOOK: ${{ secrets.SLACK_GITHUB_ACTIONS_WEBHOOK_URL }}
