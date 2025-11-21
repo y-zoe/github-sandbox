@@ -20,9 +20,9 @@ runs:
       shell: bash
       env:
         GITHUB_USER: ${{ inputs.github_username }}
+        SLACK_MENTION_MAPPING: ${{ vars.SLACK_MENTION_MAPPING }}
       run: |
-        MAPPING_FILE=".github/actions/get-slack-mention/slack-user-mapping.json"
-        SLACK_USER_ID=$(jq -r --arg user "$GITHUB_USER" '.[$user] // empty' "$MAPPING_FILE" 2>/dev/null || echo "")
+        SLACK_USER_ID=$(echo "$SLACK_MENTION_MAPPING" | jq -r --arg user "$GITHUB_USER" '.[$user] // empty' 2>/dev/null || echo "")
         
         if [ -n "$SLACK_USER_ID" ] && [ "$SLACK_USER_ID" != "null" ] && [ "$SLACK_USER_ID" != "" ]; then
           MENTION="<@$SLACK_USER_ID>"
