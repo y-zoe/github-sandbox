@@ -6,6 +6,9 @@ inputs:
     description: GitHub username (defaults to github.actor)
     required: false
     default: ${{ github.actor }}
+  slack_mention_mapping:
+    description: JSON mapping of GitHub usernames to Slack user IDs
+    required: true
 
 outputs:
   mention:
@@ -20,7 +23,7 @@ runs:
       shell: bash
       env:
         GITHUB_USER: ${{ inputs.github_username }}
-        SLACK_MENTION_MAPPING: ${{ vars.SLACK_MENTION_MAPPING }}
+        SLACK_MENTION_MAPPING: ${{ inputs.slack_mention_mapping }}
       run: |
         SLACK_USER_ID=$(echo "$SLACK_MENTION_MAPPING" | jq -r --arg user "$GITHUB_USER" '.[$user] // empty' 2>/dev/null || echo "")
         
