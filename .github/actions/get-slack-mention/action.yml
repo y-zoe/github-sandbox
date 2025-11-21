@@ -3,9 +3,9 @@ description: Get Slack mention string from GitHub user mapping or fallback to Gi
 
 inputs:
   github_username:
-    description: GitHub username (defaults to github.actor)
+    description: GitHub username (defaults to github.actor / author / pusher)
     required: false
-    default: ${{ github.actor }}
+    default: ${{ github.actor || github.event.pull_request.user.login || github.event.pusher.name || '' }}
   slack_mention_mapping:
     description: JSON mapping of GitHub usernames to Slack user IDs
     required: true
@@ -26,11 +26,11 @@ runs:
         SLACK_MENTION_MAPPING: ${{ inputs.slack_mention_mapping }}
       run: |
         SLACK_USER_ID=$(echo "$SLACK_MENTION_MAPPING" | jq -r --arg user "$GITHUB_USER" '.[$user] // empty' 2>/dev/null || echo "")
-        
+
         if [ -n "$SLACK_USER_ID" ] && [ "$SLACK_USER_ID" != "null" ] && [ "$SLACK_USER_ID" != "" ]; then
           MENTION="<@$SLACK_USER_ID>"
         else
           MENTION="@$GITHUB_USER"
         fi
-        
+
         echo "mention=$MENTION" >> $GITHUB_OUTPUT
